@@ -1,5 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers, models
+from src.data_cleaning_processing import captions_dict, image_paths
+from src.tokenizer import tokenizer
 import numpy as np
 import pandas as pd
 import os
@@ -19,3 +21,5 @@ def dataset_stats(captions_dict, img_paths, tokenizer):
     print("Vocabulary Size:", len(tokenizer.word_index)+1)
     print("Average Caption Length:", np.mean(caption_lenghts))
     print("Max Caption Length:", np.max(caption_lenghts))
+
+dataset_stats(captions_dict, image_paths, tokenizer)
