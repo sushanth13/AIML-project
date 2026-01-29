@@ -18,14 +18,14 @@ class TransformerEncoder(layers.Layer):
         self.dropout1 = layers.Dropout(rate)
         self.dropout2 = layers.Dropout(rate)
 
-    def call(self, inputs, training):
-        attn_output = self.att(inputs, inputs)
+    def call(self, x, training=None):
+        attn_output = self.att(x,x)
         attn_output = self.dropout1(attn_output, training=training)
-        out1 = self.layernorm1(inputs + attn_output)
-        ffn_output = self.ffn(out1)
+        x = self.layernorm1(x + attn_output)
+        ffn_output = self.ffn(x)
         ffn_output = self.dropout2(ffn_output, training=training)
-        return self.layernorm2(out1 + ffn_output)
-    
+        return self.layernorm2(x + ffn_output)
+
 def TextEncoder(vocab_size, embed_dim):
     inputs = layers.Input(shape=(None,))
     x = layers.Embedding(input_dim=vocab_size, output_dim=embed_dim)(inputs)
