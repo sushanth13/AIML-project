@@ -1,0 +1,34 @@
+import tensorflow as tf
+from tensorflow.keras import layers, models
+import numpy as np
+import pandas as pd
+import os
+import re
+#import matplotlib.pyplot as plt
+
+class TransformerEncoder(layers.Layer):
+    def __init__(self, embed_dim, num_heads, ff_dim, rate=0.1):
+        super(TransformerEncoder, self).__init__()
+        self.att = layers.MultiHeadAttention(num_heads=num_heads, key_dim=embed_dim)
+        self.ffn = models.Sequential(
+            [layers.Dense(ff_dim, activation="relu"), layers.Dense(embed_dim),]
+        )
+        self.layernorm1 = layers.LayerNormalization(epsilon=1e-6)
+        self.layernorm2 = layers.LayerNormalization(epsilon=1e-6)
+        self.dropout1 = layers.Dropout(rate)
+        self.dropout2 = layers.Dropout(rate)
+
+    def call(self, x, training=None):
+        attn_output = self.att(x,x)
+        attn_output = self.dropout1(attn_output, training=training)
+        x = self.layernorm1(x + attn_output)
+        ffn_output = self.ffn(x)
+        ffn_output = self.dropout2(ffn_output, training=training)
+        return self.layernorm2(x + ffn_output)
+
+def TextEncoder(vocab_size, embed_dim):
+    inputs = layers.Input(shape=(None,))
+    x = layers.Embedding(input_dim=vocab_size, output_dim=embed_dim)(inputs)
+    x = TransformerEncoder(embed_dim, num_heads=4, ff_dim=256)(x)
+    outputs = layers.GlobalAveragePooling1D()(x)
+    return models.Model(inputs, outputs, name="TextEncoder")
